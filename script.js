@@ -1,5 +1,5 @@
 function sendMessage() {
-    const webhookURL = "https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw"; // ضع رابط Webhook الخاص بك هنا
+    const webhookURL = "https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw";
     const message = document.getElementById("message").value;
 
     if (message.trim() === "") {
@@ -19,8 +19,11 @@ function sendMessage() {
             alert("Message sent successfully!");
             document.getElementById("message").value = "";
         } else {
-            alert("Failed to send message.");
+            alert("Failed to send message. Check the webhook URL and permissions.");
         }
     })
-    .catch(error => console.error("Error:", error));
+    .catch(error => {
+        console.error("Error:", error);
+        alert("An error occurred. Check the console for details.");
+    });
 }
