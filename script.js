@@ -1,5 +1,5 @@
 function sendMessage() {
-    const webhookURL = "https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw"; // ضع رابط Webhook الجديد هنا
+    const webhookURL = "https://corsproxy.io/?" + encodeURIComponent("https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw"); // استخدم Proxy
     const message = document.getElementById("message").value.trim();
 
     if (!message) {
@@ -14,13 +14,10 @@ function sendMessage() {
         },
         body: JSON.stringify({ content: message })
     })
-    .then(response => {
-        if (response.ok) {
-            alert("Message sent successfully!");
-            document.getElementById("message").value = "";
-        } else {
-            return response.text().then(text => { throw new Error(text) });
-        }
+    .then(response => response.json())
+    .then(data => {
+        alert("Message sent successfully!");
+        document.getElementById("message").value = "";
     })
     .catch(error => {
         console.error("Error:", error);
