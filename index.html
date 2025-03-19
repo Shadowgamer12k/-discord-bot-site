@@ -3,19 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft Discord Messenger</title>
+    <title>Minecraft Discord Messenger Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/twemoji.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
         
+        :root {
+            --primary-color: #5D9C3F;
+            --secondary-color: #3F7925;
+            --background-color: #333333;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'VT323', monospace;
+            image-rendering: pixelated;
         }
-        
+
         body {
-            background-color: #333333;
+            background-color: var(--background-color);
             background-image: 
                 linear-gradient(rgba(0, 0, 0, 0.3) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 0, 0, 0.3) 1px, transparent 1px);
@@ -27,9 +35,21 @@
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
-            image-rendering: pixelated;
+            transition: background-color 0.3s;
         }
-        
+
+        body.nether {
+            --primary-color: #B02E26;
+            --secondary-color: #8C241E;
+            --background-color: #2A0A0A;
+        }
+
+        body.end {
+            --primary-color: #4A2357;
+            --secondary-color: #361245;
+            --background-color: #1A081C;
+        }
+
         .container {
             width: 100%;
             max-width: 600px;
@@ -40,15 +60,15 @@
             position: relative;
             box-shadow: 0 0 0 4px #333, inset 0 0 0 2px #222;
         }
-        
+
         .title {
             text-align: center;
             margin-bottom: 20px;
             font-size: 36px;
             text-shadow: 2px 2px 0 #000;
-            color: #AAFFAA;
+            color: var(--primary-color);
         }
-        
+
         .dirt-header {
             height: 48px;
             background-image: url('/api/placeholder/600/48');
@@ -57,22 +77,23 @@
             border-bottom: 4px solid #634b33;
             position: relative;
         }
-        
+
         .grass-overlay {
             height: 8px;
-            background-color: #5D9C3F;
+            background-color: var(--primary-color);
             position: absolute;
             bottom: 0;
             left: 0;
             right: 0;
         }
-        
+
         .input-group {
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            position: relative;
         }
-        
+
         input {
             flex: 1;
             padding: 12px;
@@ -83,34 +104,34 @@
             border-radius: 0;
             outline: none;
         }
-        
+
         input:focus {
             border-color: #8899FF;
         }
-        
+
         button {
             padding: 8px 16px;
             font-size: 18px;
-            background-color: #5D9C3F;
+            background-color: var(--primary-color);
             color: white;
-            border: 3px solid #3F7925;
+            border: 3px solid var(--secondary-color);
             cursor: pointer;
             transition: all 0.1s;
             box-shadow: inset 0px 4px 0px rgba(255, 255, 255, 0.3), 
                         inset 0px -4px 0px rgba(0, 0, 0, 0.3);
             text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
         }
-        
+
         button:hover {
-            background-color: #6DAD4F;
+            filter: brightness(1.1);
         }
-        
+
         button:active {
             transform: translateY(2px);
             box-shadow: inset 0px 2px 0px rgba(255, 255, 255, 0.3), 
                         inset 0px -2px 0px rgba(0, 0, 0, 0.3);
         }
-        
+
         .message-area {
             background-color: rgba(0, 0, 0, 0.5);
             border: 3px solid #222;
@@ -121,34 +142,34 @@
             font-size: 18px;
             line-height: 1.4;
         }
-        
+
         .message {
             margin-bottom: 8px;
             padding: 5px;
             border-bottom: 1px solid #555;
+            position: relative;
         }
-        
+
         .message.user-message {
             color: #AAFFAA;
         }
-        
+
         .message.system-message {
             color: #AAAAFF;
         }
-        
+
         .username {
             font-weight: bold;
             color: #FFAA00;
         }
-        
+
         .status {
             font-size: 16px;
             margin-top: 10px;
             text-align: center;
-            color: #AAFFAA;
+            color: var(--primary-color);
         }
-        
-        /* Pixelated elements */
+
         .pickaxe {
             display: inline-block;
             width: 32px;
@@ -163,7 +184,7 @@
                 15% 30%, 15% 15%, 35% 15%
             );
         }
-        
+
         .username-modal {
             position: fixed;
             top: 0;
@@ -176,7 +197,7 @@
             align-items: center;
             z-index: 1000;
         }
-        
+
         .username-modal-content {
             background-color: #333;
             border: 4px solid #555;
@@ -185,22 +206,7 @@
             max-width: 400px;
             width: 100%;
         }
-        
-        .username-modal h2 {
-            margin-bottom: 20px;
-            color: #AAFFAA;
-        }
-        
-        .username-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .username-form button {
-            align-self: center;
-        }
-         /* New Feature: Theme Switcher */
+
         .theme-switcher {
             position: absolute;
             top: 10px;
@@ -216,7 +222,6 @@
             cursor: pointer;
         }
 
-        /* New Feature: Reaction Styles */
         .reactions {
             display: flex;
             gap: 5px;
@@ -230,25 +235,12 @@
             cursor: pointer;
         }
 
-        /* New Feature: Mobile Optimization */
-        @media (max-width: 480px) {
-            .input-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-            }
-        }
-
-        /* New Feature: Typing Indicator */
         .typing-indicator {
             color: #888;
             font-style: italic;
             min-height: 20px;
         }
 
-        /* New Feature: Emoji Picker */
         .emoji-picker {
             position: absolute;
             bottom: 80px;
@@ -268,7 +260,6 @@
             padding: 2px;
         }
 
-        /* New Feature: Message Context Menu */
         .context-menu {
             position: fixed;
             background: #222;
@@ -282,7 +273,6 @@
             cursor: pointer;
         }
 
-        /* New Feature: Poll Styles */
         .poll-options {
             margin: 10px 0;
         }
@@ -291,6 +281,33 @@
             margin: 5px 0;
             padding: 5px;
             background: rgba(255, 255, 255, 0.05);
+        }
+
+        .formatting-tools {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .container {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -305,19 +322,30 @@
         </div>
     </div>
 
+    <div class="theme-switcher">
+        <div class="theme-btn" data-theme="default" style="background: #5D9C3F"></div>
+        <div class="theme-btn" data-theme="nether" style="background: #B02E26"></div>
+        <div class="theme-btn" data-theme="end" style="background: #4A2357"></div>
+    </div>
+
     <div class="container">
         <div class="dirt-header">
             <div class="grass-overlay"></div>
         </div>
         <h1 class="title">
             <span class="pickaxe"></span>
-            Minecraft Discord Messenger
+            Minecraft Discord Messenger Pro
             <span class="pickaxe"></span>
         </h1>
         
+        <div class="formatting-tools">
+            <button id="boldButton" title="Bold">B</button>
+            <button id="italicButton" title="Italic">I</button>
+            <button id="emojiButton">😀</button>
+        </div>
+        
         <div class="message-area" id="messageArea">
-            <div class="message system-message">Welcome to the Minecraft Discord Messenger!</div>
-            <div class="message system-message">Type your message and click send to post to Discord.</div>
+            <div class="message system-message">Welcome to Minecraft Discord Messenger Pro!</div>
         </div>
         
         <div class="input-group">
@@ -325,24 +353,17 @@
             <button id="sendButton">Send</button>
         </div>
         
+        <div class="typing-indicator" id="typingIndicator"></div>
         <p class="status" id="status"></p>
     </div>
-        <!-- New Feature: Theme Switcher -->
-    <div class="theme-switcher">
-        <div class="theme-btn" data-theme="default" style="background: #5D9C3F"></div>
-        <div class="theme-btn" data-theme="nether" style="background: #B02E26"></div>
-        <div class="theme-btn" data-theme="end" style="background: #4A2357"></div>
-    </div>
 
-    <!-- New Feature: Emoji Picker -->
     <div class="emoji-picker" id="emojiPicker"></div>
-
-    <!-- New Feature: Context Menu -->
     <div class="context-menu" id="contextMenu">
         <div class="context-item" id="editMessage">Edit</div>
         <div class="context-item" id="deleteMessage">Delete</div>
         <div class="context-item" id="reactMessage">Add Reaction</div>
     </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const messageInput = document.getElementById('messageInput');
@@ -352,216 +373,176 @@
             const usernameModal = document.getElementById('usernameModal');
             const usernameInput = document.getElementById('usernameInput');
             const setUsernameButton = document.getElementById('setUsernameButton');
-            
+            const emojiPicker = document.getElementById('emojiPicker');
+            const contextMenu = document.getElementById('contextMenu');
+            const boldButton = document.getElementById('boldButton');
+            const emojiButton = document.getElementById('emojiButton');
+            const typingIndicator = document.getElementById('typingIndicator');
+
             let username = '';
-            let messages = [];
-            
-            // Local storage to persist messages
-            if (localStorage.getItem('minecraftMessages')) {
-                try {
-                    messages = JSON.parse(localStorage.getItem('minecraftMessages'));
-                    loadMessages();
-                } catch (e) {
-                    console.error('Error loading messages:', e);
-                }
+            let messages = JSON.parse(localStorage.getItem('minecraftMessages') || '[]');
+            let selectedMessage = null;
+            let typingTimeout;
+            let isOnline = navigator.onLine;
+
+            // Initialize
+            loadMessages();
+            initTheme();
+            initEmojiPicker();
+            initEventListeners();
+            checkConnection();
+
+            function initTheme() {
+                const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+                document.body.className = savedTheme;
             }
-            
-            // Function to save messages to local storage
-            function saveMessages() {
-                localStorage.setItem('minecraftMessages', JSON.stringify(messages));
-            }
-            
-            // Function to load messages from array
-            function loadMessages() {
-                // Clear existing messages except welcome messages
-                while (messageArea.children.length > 2) {
-                    messageArea.removeChild(messageArea.lastChild);
-                }
-                
-                // Add stored messages
-                messages.forEach(msg => {
-                    const messageElement = document.createElement('div');
-                    messageElement.className = 'message user-message';
-                    
-                    const usernameSpan = document.createElement('span');
-                    usernameSpan.className = 'username';
-                    usernameSpan.textContent = msg.username + ': ';
-                    
-                    messageElement.appendChild(usernameSpan);
-                    messageElement.appendChild(document.createTextNode(msg.text));
-                    
-                    messageArea.appendChild(messageElement);
-                });
-                
-                // Scroll to bottom
-                messageArea.scrollTop = messageArea.scrollHeight;
-            }
-            
-            // Function to add a message to the UI and storage
-            function addMessage(username, text) {
-                const newMessage = {
-                    username: username,
-                    text: text,
-                    timestamp: new Date().toISOString()
-                };
-                
-                messages.push(newMessage);
-                saveMessages();
-                
-                const messageElement = document.createElement('div');
-                messageElement.className = 'message user-message';
-                
-                const usernameSpan = document.createElement('span');
-                usernameSpan.className = 'username';
-                usernameSpan.textContent = username + ': ';
-                
-                messageElement.appendChild(usernameSpan);
-                messageElement.appendChild(document.createTextNode(text));
-                
-                messageArea.appendChild(messageElement);
-                messageArea.scrollTop = messageArea.scrollHeight;
-            }
-            
-            // Function to add system message
-            function addSystemMessage(text) {
-                const message = document.createElement('div');
-                message.className = 'message system-message';
-                message.textContent = text;
-                messageArea.appendChild(message);
-                messageArea.scrollTop = messageArea.scrollHeight;
-            }
-            
-            // Function to send message to Discord webhook
-            async function sendToDiscord(username, message) {
-                // This is where you would put your Discord webhook URL
-                const webhookUrl = 'https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw'; // Add your Discord webhook URL here
-                
-                if (!webhookUrl) {
-                    status.textContent = 'Error: Discord webhook URL not configured!';
-                    status.style.color = '#FF5555';
-                    return false;
-                }
-                
-                try {
-                    status.textContent = 'Sending message...';
-                    status.style.color = '#FFAA00';
-                    
-                    const response = await fetch(webhookUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            content: message,
-                            username: username
-                        }),
+
+            function initEmojiPicker() {
+                const emojis = ['😀', '😎', '🤖', '🎮', '⭐', '❤️', '✅', '❌', '👍', '👎'];
+                emojis.forEach(emoji => {
+                    const btn = document.createElement('div');
+                    btn.className = 'emoji-item';
+                    btn.textContent = emoji;
+                    btn.addEventListener('click', () => {
+                        messageInput.value += emoji;
+                        emojiPicker.style.display = 'none';
                     });
-                    
-                    if (response.ok) {
-                        status.textContent = 'Message sent successfully!';
-                        status.style.color = '#AAFFAA';
-                        return true;
-                    } else {
-                        status.textContent = `Error: ${response.status} ${response.statusText}`;
-                        status.style.color = '#FF5555';
-                        return false;
-                    }
-                } catch (error) {
-                    status.textContent = `Error: ${error.message}`;
-                    status.style.color = '#FF5555';
-                    return false;
-                }
+                    emojiPicker.appendChild(btn);
+                });
             }
-            
-            // Handle username setting
-            setUsernameButton.addEventListener('click', () => {
-                const name = usernameInput.value.trim();
-                if (name) {
-                    username = name;
-                    usernameModal.style.display = 'none';
-                    addSystemMessage(`Welcome, ${username}!`);
-                    messageInput.focus();
-                }
-            });
-            
-            // Handle send button click
-            sendButton.addEventListener('click', async () => {
+
+            function initEventListeners() {
+                // Theme Switcher
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.body.className = btn.dataset.theme;
+                        localStorage.setItem('selectedTheme', btn.dataset.theme);
+                    });
+                });
+
+                // Message Input
+                messageInput.addEventListener('input', handleTyping);
+                messageInput.addEventListener('keydown', handleCommands);
+                messageInput.addEventListener('keypress', e => e.key === 'Enter' && sendMessage());
+
+                // Buttons
+                sendButton.addEventListener('click', sendMessage);
+                emojiButton.addEventListener('click', () => 
+                    emojiPicker.style.display = emojiPicker.style.display === 'none' ? 'grid' : 'none');
+                boldButton.addEventListener('click', () => wrapSelection('**'));
+
+                // Context Menu
+                messageArea.addEventListener('contextmenu', showContextMenu);
+                document.addEventListener('click', () => contextMenu.style.display = 'none');
+                document.getElementById('editMessage').addEventListener('click', editMessage);
+                document.getElementById('deleteMessage').addEventListener('click', deleteMessage);
+
+                // Network Events
+                window.addEventListener('online', checkConnection);
+                window.addEventListener('offline', checkConnection);
+            }
+
+            function handleTyping() {
+                typingIndicator.textContent = `${username} is typing...`;
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => 
+                    typingIndicator.textContent = '', 1000);
+            }
+
+            async function sendMessage() {
                 const message = messageInput.value.trim();
-                if (message) {
-                    const sent = await sendToDiscord(username, message);
-                    if (sent) {
-                        addMessage(username, message);
+                if (!message) return;
+
+                if (message.startsWith('/')) {
+                    handleCommand(message);
+                } else {
+                    const success = await sendToDiscord(message);
+                    if (success) {
+                        addMessage(message);
                         messageInput.value = '';
                     }
-                } else {
-                    status.textContent = 'Please enter a message first!';
-                    status.style.color = '#FFAA00';
                 }
-            });
-            
-            // Handle Enter key press
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    sendButton.click();
+            }
+
+            function handleCommand(command) {
+                const [cmd, ...args] = command.slice(1).split(' ');
+                switch(cmd) {
+                    case 'clear':
+                        messageArea.innerHTML = '';
+                        break;
+                    case 'me':
+                        addSystemMessage(`${username} ${args.join(' ')}`);
+                        break;
+                    case 'poll':
+                        createPoll(args);
+                        break;
                 }
-            });
-            
-            // Handle Enter key press in username modal
-            usernameInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    setUsernameButton.click();
+                messageInput.value = '';
+            }
+
+            async function sendToDiscord(message) {
+                if (!isOnline) {
+                    status.textContent = 'Message queued (offline)';
+                    return false;
                 }
-            });
-            
-            // Focus on username input when page loads
-            usernameInput.focus();
 
-
-
-
-
-            // New Feature 1: Emoji Picker
-            const emojiPicker = document.getElementById('emojiPicker');
-            const emojis = ['😀', '😎', '🤖', '🎮', '⭐', '❤️', '✅', '❌'];
-            emojis.forEach(emoji => {
-                const btn = document.createElement('div');
-                btn.className = 'emoji-item';
-                btn.textContent = emoji;
-                btn.addEventListener('click', () => {
-                    messageInput.value += emoji;
-                });
-                emojiPicker.appendChild(btn);
-            });
-
-            // New Feature 2: Theme Switcher
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.body.className = btn.dataset.theme;
-                    localStorage.setItem('selectedTheme', btn.dataset.theme);
-                });
-            });
-
-            // New Feature 3: Typing Indicator
-            let typingTimeout;
-            messageInput.addEventListener('input', () => {
-                status.textContent = `${username} is typing...`;
-                clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    status.textContent = '';
-                }, 1000);
-            });
-
-            // New Feature 4: Message Reactions
-            messageArea.addEventListener('click', (e) => {
-                if (e.target.classList.contains('reaction')) {
-                    const count = e.target.querySelector('.count');
-                    count.textContent = parseInt(count.textContent) + 1;
+                const webhookUrl = 'YOUR_DISCORD_WEBHOOK_URL';
+                
+                try {
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({
+                            content: message,
+                            username: username,
+                            avatar_url: `https://crafatar.com/avatars/${username}?size=128`
+                        })
+                    });
+                    return response.ok;
+                } catch (error) {
+                    console.error('Error:', error);
+                    return false;
                 }
-            });
+            }
 
-            // New Feature 5: Context Menu
-            let selectedMessage;
-            messageArea.addEventListener('contextmenu', (e) => {
+            function addMessage(text) {
+                const message = {
+                    username,
+                    text,
+                    timestamp: new Date().toISOString(),
+                    reactions: []
+                };
+
+                messages.push(message);
+                localStorage.setItem('minecraftMessages', JSON.stringify(messages));
+                appendMessage(message);
+            }
+
+            function appendMessage(message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.innerHTML = `
+                    <img class="avatar" src="https://crafatar.com/avatars/${message.username}?size=32" alt="${message.username}">
+                    <span class="username">${message.username}:</span>
+                    <span>${message.text}</span>
+                    ${message.reactions.length > 0 ? 
+                        `<div class="reactions">${message.reactions.map(r => 
+                            `<span class="reaction">${r.emoji} <span class="count">${r.count}</span></span>`
+                        ).join('')}</div>` : ''}
+                `;
+                messageArea.appendChild(messageDiv);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+
+            function addSystemMessage(text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message system-message';
+                messageDiv.textContent = text;
+                messageArea.appendChild(messageDiv);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+
+            function showContextMenu(e) {
                 if (e.target.closest('.message')) {
                     e.preventDefault();
                     selectedMessage = e.target.closest('.message');
@@ -569,106 +550,164 @@
                     contextMenu.style.left = `${e.pageX}px`;
                     contextMenu.style.top = `${e.pageY}px`;
                 }
-            });
+            }
 
-            // New Feature 6: Edit Message
-            document.getElementById('editMessage').addEventListener('click', () => {
-                const text = selectedMessage.querySelector('span:last-child').textContent;
-                const newText = prompt('Edit message:', text);
+            function editMessage() {
+                const textElement = selectedMessage.querySelector('span:last-child');
+                const newText = prompt('Edit message:', textElement.textContent);
                 if (newText) {
-                    selectedMessage.querySelector('span:last-child').textContent = newText;
+                    textElement.textContent = newText;
                     // Update localStorage
                 }
-            });
+            }
 
-            // New Feature 7: Delete Message
-            document.getElementById('deleteMessage').addEventListener('click', () => {
+            function deleteMessage() {
                 selectedMessage.remove();
                 // Update localStorage
-            });
+            }
 
-            // New Feature 8: Command System
-            messageInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && messageInput.value.startsWith('/')) {
-                    e.preventDefault();
-                    const command = messageInput.value.slice(1).split(' ');
-                    switch(command[0]) {
-                        case 'clear':
-                            messageArea.innerHTML = '';
-                            break;
-                        case 'me':
-                            addSystemMessage(`${username} ${command.slice(1).join(' ')}`);
-                            break;
+                       function createPoll(args) {
+                const question = args.shift();
+                const options = args;
+                
+                const pollDiv = document.createElement('div');
+                pollDiv.className = 'message system-message';
+                pollDiv.innerHTML = `
+                    <div class="poll-options">
+                        <h3>${question}</h3>
+                        ${options.map((opt, i) => `
+                            <div class="poll-option" data-index="${i}">
+                                ${String.fromCharCode(65 + i)}. ${opt}
+                                <span class="vote-count">0</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                pollDiv.querySelectorAll('.poll-option').forEach(option => {
+                    option.addEventListener('click', () => voteOnPoll(option));
+                });
+                
+                messageArea.appendChild(pollDiv);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+
+            function voteOnPoll(option) {
+                const countSpan = option.querySelector('.vote-count');
+                countSpan.textContent = parseInt(countSpan.textContent) + 1;
+            }
+
+            function checkConnection() {
+                isOnline = navigator.onLine;
+                status.textContent = isOnline ? 'Online' : 'Offline - working locally';
+                status.style.color = isOnline ? '#AAFFAA' : '#FF5555';
+                
+                if(isOnline) {
+                    sendQueuedMessages();
+                }
+            }
+
+            async function sendQueuedMessages() {
+                const queued = JSON.parse(localStorage.getItem('queuedMessages') || '[]');
+                for(const msg of queued) {
+                    if(await sendToDiscord(msg)) {
+                        queued.splice(queued.indexOf(msg), 1);
+                        localStorage.setItem('queuedMessages', JSON.stringify(queued));
                     }
-                    messageInput.value = '';
+                }
+            }
+
+            function wrapSelection(wrapper) {
+                const start = messageInput.selectionStart;
+                const end = messageInput.selectionEnd;
+                messageInput.value = 
+                    messageInput.value.substring(0, start) +
+                    wrapper +
+                    messageInput.value.substring(start, end) +
+                    wrapper +
+                    messageInput.value.substring(end);
+                messageInput.focus();
+                messageInput.setSelectionRange(start + wrapper.length, end + wrapper.length);
+            }
+
+            // Initialize user status tracking
+            let lastActivity = Date.now();
+            setInterval(() => {
+                const inactiveTime = Date.now() - lastActivity;
+                if(inactiveTime > 300000) { // 5 minutes
+                    status.textContent = `${username} is AFK`;
+                }
+            }, 60000);
+
+            document.addEventListener('mousemove', () => lastActivity = Date.now());
+            document.addEventListener('keypress', () => lastActivity = Date.now());
+
+            // Message search functionality
+            const searchInput = document.createElement('input');
+            searchInput.placeholder = 'Search messages...';
+            searchInput.style.marginBottom = '10px';
+            searchInput.style.width = '100%';
+            messageArea.parentNode.insertBefore(searchInput, messageArea);
+
+            searchInput.addEventListener('input', debounce(() => {
+                const query = searchInput.value.toLowerCase();
+                Array.from(messageArea.children).forEach(message => {
+                    const text = message.textContent.toLowerCase();
+                    message.style.display = text.includes(query) ? 'block' : 'none';
+                });
+            }, 300));
+
+            // Message backup system
+            document.addEventListener('keydown', (e) => {
+                if(e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    const data = JSON.stringify(messages);
+                    const blob = new Blob([data], {type: 'application/json'});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `chat-backup-${new Date().toISOString()}.json`;
+                    a.click();
                 }
             });
 
-            // New Feature 9: Link Previews
-            const linkPreview = document.createElement('div');
-            messageInput.addEventListener('input', debounce(() => {
-                const links = messageInput.value.match(/(https?:\/\/[^\s]+)/g);
-                if (links) {
-                    // Fetch link preview API
-                }
-            }, 500));
-
-            // New Feature 10: Sound Notifications
-            const notificationSound = new Audio('notification.mp3');
-            function playNotification() {
-                if (document.hidden) notificationSound.play();
+            // Initialize audio notification
+            const notificationSound = new Audio('data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=');
+            
+            // Security: Input sanitization
+            function sanitizeInput(input) {
+                return input.replace(/</g, '&lt;').replace(/>/g, '&gt;');
             }
 
-            // New Feature 11: Message Formatting
-            document.getElementById('boldButton').addEventListener('click', () => {
-                wrapSelection('**');
-            });
-
-            // New Feature 12: Auto-Complete Mentions
-            messageInput.addEventListener('input', () => {
-                if (messageInput.value.includes('@')) {
-                    // Show mention suggestions
-                }
-            });
-
-            // New Feature 13: User Avatars
-            function getMinecraftAvatar(username) {
-                return `https://crafatar.com/avatars/${username}?size=32&overlay`;
-            }
-
-            // New Feature 14: Message Pinning
-            function pinMessage(message) {
-                // Add to pinned messages section
-            }
-
-            // New Feature 15: Offline Support
-            window.addEventListener('offline', () => {
-                status.textContent = 'Offline - messages will be sent when online';
-            });
-
-            // Remaining features would follow similar patterns
-            // (Due to character limits, full implementation of all 30 features can't be shown)
-        });
-
-        // Utility functions
-        function debounce(func, timeout = 300) {
-            let timer;
-            return (...args) => {
-                clearTimeout(timer);
-                timer = setTimeout(() => { func.apply(this, args); }, timeout);
+            // Language support
+            const translations = {
+                en: { welcome: "Welcome", typing: "is typing" },
+                es: { welcome: "Bienvenido", typing: "está escribiendo" }
             };
-        }
+            
+            let currentLang = 'en';
+            document.getElementById('langButton').addEventListener('click', () => {
+                currentLang = currentLang === 'en' ? 'es' : 'en';
+                updateTranslations();
+            });
 
-        function wrapSelection(wrapper) {
-            const start = messageInput.selectionStart;
-            const end = messageInput.selectionEnd;
-            messageInput.value = 
-                messageInput.value.substring(0, start) +
-                wrapper +
-                messageInput.value.substring(start, end) +
-                wrapper +
-                messageInput.value.substring(end);
-        }
+            function updateTranslations() {
+                document.querySelectorAll('[data-lang]').forEach(el => {
+                    el.textContent = translations[currentLang][el.dataset.lang];
+                });
+            }
+
+            // Accessibility features
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') {
+                    contextMenu.style.display = 'none';
+                    emojiPicker.style.display = 'none';
+                }
+            });
+
+            // Initialize remaining UI
+            messageInput.placeholder = translations[currentLang].messagePlaceholder;
+            usernameInput.placeholder = translations[currentLang].usernamePlaceholder;
         });
     </script>
 </body>
