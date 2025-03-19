@@ -392,6 +392,20 @@
             initEventListeners();
             checkConnection();
 
+            function loadMessages() {
+        messageArea.innerHTML = '<div class="message system-message">Welcome to Minecraft Discord Messenger Pro!</div>';
+        
+        try {
+            const storedMessages = localStorage.getItem('minecraftMessages');
+            if (storedMessages) {
+                messages = JSON.parse(storedMessages);
+                messages.forEach(msg => appendMessage(msg));
+            }
+        } catch (e) {
+            console.error('Error loading messages:', e);
+        }
+    }
+
             function initTheme() {
                 const savedTheme = localStorage.getItem('selectedTheme') || 'default';
                 document.body.className = savedTheme;
