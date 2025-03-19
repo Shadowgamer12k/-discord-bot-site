@@ -128,6 +128,19 @@
             border-bottom: 1px solid #555;
         }
         
+        .message.user-message {
+            color: #AAFFAA;
+        }
+        
+        .message.system-message {
+            color: #AAAAFF;
+        }
+        
+        .username {
+            font-weight: bold;
+            color: #FFAA00;
+        }
+        
         .status {
             font-size: 16px;
             margin-top: 10px;
@@ -150,9 +163,56 @@
                 15% 30%, 15% 15%, 35% 15%
             );
         }
+        
+        .username-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .username-modal-content {
+            background-color: #333;
+            border: 4px solid #555;
+            padding: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .username-modal h2 {
+            margin-bottom: 20px;
+            color: #AAFFAA;
+        }
+        
+        .username-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .username-form button {
+            align-self: center;
+        }
     </style>
 </head>
 <body>
+    <div id="usernameModal" class="username-modal">
+        <div class="username-modal-content">
+            <h2>Enter Your Minecraft Username</h2>
+            <div class="username-form">
+                <input type="text" id="usernameInput" placeholder="Enter username..." />
+                <button id="setUsernameButton">Start Chatting</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="dirt-header">
             <div class="grass-overlay"></div>
@@ -164,8 +224,8 @@
         </h1>
         
         <div class="message-area" id="messageArea">
-            <div class="message">Welcome to the Minecraft Discord Messenger!</div>
-            <div class="message">Type your message and click send to post to Discord.</div>
+            <div class="message system-message">Welcome to the Minecraft Discord Messenger!</div>
+            <div class="message system-message">Type your message and click send to post to Discord.</div>
         </div>
         
         <div class="input-group">
@@ -182,25 +242,97 @@
             const sendButton = document.getElementById('sendButton');
             const messageArea = document.getElementById('messageArea');
             const status = document.getElementById('status');
+            const usernameModal = document.getElementById('usernameModal');
+            const usernameInput = document.getElementById('usernameInput');
+            const setUsernameButton = document.getElementById('setUsernameButton');
             
-            // Function to add a message to the message area
-            function addMessage(text) {
+            let username = '';
+            let messages = [];
+            
+            // Local storage to persist messages
+            if (localStorage.getItem('minecraftMessages')) {
+                try {
+                    messages = JSON.parse(localStorage.getItem('minecraftMessages'));
+                    loadMessages();
+                } catch (e) {
+                    console.error('Error loading messages:', e);
+                }
+            }
+            
+            // Function to save messages to local storage
+            function saveMessages() {
+                localStorage.setItem('minecraftMessages', JSON.stringify(messages));
+            }
+            
+            // Function to load messages from array
+            function loadMessages() {
+                // Clear existing messages except welcome messages
+                while (messageArea.children.length > 2) {
+                    messageArea.removeChild(messageArea.lastChild);
+                }
+                
+                // Add stored messages
+                messages.forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message user-message';
+                    
+                    const usernameSpan = document.createElement('span');
+                    usernameSpan.className = 'username';
+                    usernameSpan.textContent = msg.username + ': ';
+                    
+                    messageElement.appendChild(usernameSpan);
+                    messageElement.appendChild(document.createTextNode(msg.text));
+                    
+                    messageArea.appendChild(messageElement);
+                });
+                
+                // Scroll to bottom
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+            
+            // Function to add a message to the UI and storage
+            function addMessage(username, text) {
+                const newMessage = {
+                    username: username,
+                    text: text,
+                    timestamp: new Date().toISOString()
+                };
+                
+                messages.push(newMessage);
+                saveMessages();
+                
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message user-message';
+                
+                const usernameSpan = document.createElement('span');
+                usernameSpan.className = 'username';
+                usernameSpan.textContent = username + ': ';
+                
+                messageElement.appendChild(usernameSpan);
+                messageElement.appendChild(document.createTextNode(text));
+                
+                messageArea.appendChild(messageElement);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+            
+            // Function to add system message
+            function addSystemMessage(text) {
                 const message = document.createElement('div');
-                message.className = 'message';
+                message.className = 'message system-message';
                 message.textContent = text;
                 messageArea.appendChild(message);
                 messageArea.scrollTop = messageArea.scrollHeight;
             }
             
             // Function to send message to Discord webhook
-            async function sendToDiscord(message) {
+            async function sendToDiscord(username, message) {
                 // This is where you would put your Discord webhook URL
                 const webhookUrl = 'https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw'; // Add your Discord webhook URL here
                 
                 if (!webhookUrl) {
                     status.textContent = 'Error: Discord webhook URL not configured!';
                     status.style.color = '#FF5555';
-                    return;
+                    return false;
                 }
                 
                 try {
@@ -213,41 +345,69 @@
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            content: message
+                            content: message,
+                            username: username
                         }),
                     });
                     
                     if (response.ok) {
                         status.textContent = 'Message sent successfully!';
                         status.style.color = '#AAFFAA';
-                        addMessage(`You: ${message}`);
-                        messageInput.value = '';
+                        return true;
                     } else {
                         status.textContent = `Error: ${response.status} ${response.statusText}`;
                         status.style.color = '#FF5555';
+                        return false;
                     }
                 } catch (error) {
                     status.textContent = `Error: ${error.message}`;
                     status.style.color = '#FF5555';
+                    return false;
                 }
             }
             
-            // Event listeners
-            sendButton.addEventListener('click', () => {
+            // Handle username setting
+            setUsernameButton.addEventListener('click', () => {
+                const name = usernameInput.value.trim();
+                if (name) {
+                    username = name;
+                    usernameModal.style.display = 'none';
+                    addSystemMessage(`Welcome, ${username}!`);
+                    messageInput.focus();
+                }
+            });
+            
+            // Handle send button click
+            sendButton.addEventListener('click', async () => {
                 const message = messageInput.value.trim();
                 if (message) {
-                    sendToDiscord(message);
+                    const sent = await sendToDiscord(username, message);
+                    if (sent) {
+                        addMessage(username, message);
+                        messageInput.value = '';
+                    }
                 } else {
                     status.textContent = 'Please enter a message first!';
                     status.style.color = '#FFAA00';
                 }
             });
             
+            // Handle Enter key press
             messageInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     sendButton.click();
                 }
             });
+            
+            // Handle Enter key press in username modal
+            usernameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    setUsernameButton.click();
+                }
+            });
+            
+            // Focus on username input when page loads
+            usernameInput.focus();
         });
     </script>
 </body>
