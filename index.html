@@ -3,15 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Message to Discord</title>
-    <link rel="stylesheet" href="style.css">
-    <script defer src="script.js"></script>
+    <title>Minecraft Discord Messenger</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'VT323', monospace;
+        }
+        
+        body {
+            background-color: #333333;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.3) 1px, transparent 1px);
+            background-size: 16px 16px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            image-rendering: pixelated;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border: 4px solid #555;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 0 0 4px #333, inset 0 0 0 2px #222;
+        }
+        
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 36px;
+            text-shadow: 2px 2px 0 #000;
+            color: #AAFFAA;
+        }
+        
+        .dirt-header {
+            height: 48px;
+            background-image: url('/api/placeholder/600/48');
+            background-color: #866043;
+            margin: -20px -20px 20px -20px;
+            border-bottom: 4px solid #634b33;
+            position: relative;
+        }
+        
+        .grass-overlay {
+            height: 8px;
+            background-color: #5D9C3F;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        input {
+            flex: 1;
+            padding: 12px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #555;
+            border: 3px solid #222;
+            border-radius: 0;
+            outline: none;
+        }
+        
+        input:focus {
+            border-color: #8899FF;
+        }
+        
+        button {
+            padding: 8px 16px;
+            font-size: 18px;
+            background-color: #5D9C3F;
+            color: white;
+            border: 3px solid #3F7925;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: inset 0px 4px 0px rgba(255, 255, 255, 0.3), 
+                        inset 0px -4px 0px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        button:hover {
+            background-color: #6DAD4F;
+        }
+        
+        button:active {
+            transform: translateY(2px);
+            box-shadow: inset 0px 2px 0px rgba(255, 255, 255, 0.3), 
+                        inset 0px -2px 0px rgba(0, 0, 0, 0.3);
+        }
+        
+        .message-area {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 3px solid #222;
+            height: 300px;
+            padding: 10px;
+            margin-top: 20px;
+            overflow-y: auto;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+        
+        .message {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-bottom: 1px solid #555;
+        }
+        
+        .status {
+            font-size: 16px;
+            margin-top: 10px;
+            text-align: center;
+            color: #AAFFAA;
+        }
+        
+        /* Pixelated elements */
+        .pickaxe {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: #AAA;
+            margin-right: 10px;
+            clip-path: polygon(
+                50% 0%, 65% 15%, 85% 15%, 85% 30%, 
+                100% 30%, 100% 45%, 85% 45%, 85% 60%, 
+                50% 60%, 50% 100%, 35% 100%, 35% 60%, 
+                15% 60%, 15% 45%, 0% 45%, 0% 30%, 
+                15% 30%, 15% 15%, 35% 15%
+            );
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h2>Send a Message to Discord</h2>
-        <input type="text" id="message" placeholder="Type your message here">
-        <button onclick="sendMessage()">Send</button>
+        <div class="dirt-header">
+            <div class="grass-overlay"></div>
+        </div>
+        <h1 class="title">
+            <span class="pickaxe"></span>
+            Minecraft Discord Messenger
+            <span class="pickaxe"></span>
+        </h1>
+        
+        <div class="message-area" id="messageArea">
+            <div class="message">Welcome to the Minecraft Discord Messenger!</div>
+            <div class="message">Type your message and click send to post to Discord.</div>
+        </div>
+        
+        <div class="input-group">
+            <input type="text" id="messageInput" placeholder="Type your message here..." />
+            <button id="sendButton">Send</button>
+        </div>
+        
+        <p class="status" id="status"></p>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+            const messageArea = document.getElementById('messageArea');
+            const status = document.getElementById('status');
+            
+            // Function to add a message to the message area
+            function addMessage(text) {
+                const message = document.createElement('div');
+                message.className = 'message';
+                message.textContent = text;
+                messageArea.appendChild(message);
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }
+            
+            // Function to send message to Discord webhook
+            async function sendToDiscord(message) {
+                // This is where you would put your Discord webhook URL
+                const webhookUrl = 'https://discord.com/api/webhooks/1351700670075371651/tp3byHb85gA-A2uQ7NPbhSl28hI3zU1MhthpaGxi1D3fizwoFCPMn3eSlX-8en4OwdCw'; // Add your Discord webhook URL here
+                
+                if (!webhookUrl) {
+                    status.textContent = 'Error: Discord webhook URL not configured!';
+                    status.style.color = '#FF5555';
+                    return;
+                }
+                
+                try {
+                    status.textContent = 'Sending message...';
+                    status.style.color = '#FFAA00';
+                    
+                    const response = await fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            content: message
+                        }),
+                    });
+                    
+                    if (response.ok) {
+                        status.textContent = 'Message sent successfully!';
+                        status.style.color = '#AAFFAA';
+                        addMessage(`You: ${message}`);
+                        messageInput.value = '';
+                    } else {
+                        status.textContent = `Error: ${response.status} ${response.statusText}`;
+                        status.style.color = '#FF5555';
+                    }
+                } catch (error) {
+                    status.textContent = `Error: ${error.message}`;
+                    status.style.color = '#FF5555';
+                }
+            }
+            
+            // Event listeners
+            sendButton.addEventListener('click', () => {
+                const message = messageInput.value.trim();
+                if (message) {
+                    sendToDiscord(message);
+                } else {
+                    status.textContent = 'Please enter a message first!';
+                    status.style.color = '#FFAA00';
+                }
+            });
+            
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendButton.click();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
